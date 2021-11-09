@@ -1,0 +1,70 @@
+plugins {
+	id 'org.springframework.boot' version '2.5.6'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'study'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+// QueryDSL Version
+def queryDSLVersion = '4.3.1'
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// querydsl
+	implementation 'com.querydsl:querydsl-jpa'
+//	annotationProcessor("com.querydsl:querydsl-apt:${queryDSLVersion}:jpa") // querydsl JPAAnnotationProcessor 사용 지정
+	annotationProcessor(
+			"com.querydsl:querydsl-apt:${queryDSLVersion}:jpa",
+			"org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final",
+			"javax.annotation:javax.annotation-api"
+	)
+//	annotationProcessor("jakarta.persistence:jakarta.persistence-api") // java.lang.NoClassDefFoundError(javax.annotation.Entity) 발생 대응
+//	annotationProcessor("jakarta.annotation:jakarta.annotation-api") // java.lang.NoClassDefFoundError(javax.annotation.Generated) 발생 대응
+
+	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.8'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	runtimeOnly 'com.h2database:h2'
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+// querydsl 추가 시작
+def querydslDir = "$buildDir/generated/querydsl" // build 폴더로 넣는 방법이 remote에 올라가지 않아 깔끔한 방법으로 생각됨
+
+//querydsl {
+//	jpa = true
+//	querydslSourcesDir = querydslDir
+//}
+sourceSets {    // IntelliJ 에서 source 로 자동으로 잡히도록
+	main.java.srcDir querydslDir
+}
+configurations {
+	querydsl.extendsFrom compileClasspath
+}
+//compileQuerydsl {
+//	options.annotationProcessorPath = configurations.querydsl
+//}
+// querydsl 추가 끝
